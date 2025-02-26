@@ -45,8 +45,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'djoser',
     'rest_framework_simplejwt',
-    'users',  # We'll create this next
-
+    'users',
 
 ]
 
