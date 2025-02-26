@@ -4,22 +4,14 @@ import HelloWorld from './components/HelloWorld.vue'
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-        <router-link to="/">Job List</router-link>
-        <router-link to="/add">Add Job</router-link>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+  <nav class="p-4 bg-blue-600 text-white shadow-md flex justify-center space-x-4">
+    <router-link to="/" class="hover:underline">Job List</router-link>
+    <router-link to="/add" class="hover:underline">Add Job</router-link>
+  </nav>
+  <div class="p-6">
+    <router-view />
+  </div>
+  
 </template>
 
 <style scoped>
