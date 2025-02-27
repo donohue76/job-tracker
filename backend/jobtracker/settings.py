@@ -13,13 +13,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-id!*@t=midmvb!y494gaf%*^_!j(%_0!jfqarz&$(y2t^kw+=s"
@@ -27,8 +22,7 @@ SECRET_KEY = "django-insecure-id!*@t=midmvb!y494gaf%*^_!j(%_0!jfqarz&$(y2t^kw+=s
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 # Application definition
 
@@ -39,30 +33,39 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'corsheaders',
-    'rest_framework',
-    'jobs',
-    'rest_framework.authtoken',
-    'djoser',
-    'rest_framework_simplejwt',
-    'users',
-
+    "corsheaders",  # Moved up for CORS handling
+    "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",  # Ensure blacklisting works
+    "rest_framework.authtoken",
+    "djoser",
+    "jobs",
+    "users",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",  # Moved up for proper handling
     "django.middleware.common.CommonMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
 ]
 
+# ✅ Fix Typo: CORS_ALLOW_CREDENTIALS (Previously CCORS_ALLOW_CREDENTIALS)
+CORS_ALLOW_CREDENTIALS = True  # Allow sending cookies with requests
+
+# ✅ Ensure CORS settings are correct
+CORS_ALLOW_ALL_ORIGINS = False  # Enforce allowed origins only
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Vue.js frontend
+    "http://127.0.0.1:5173",  # Alternative localhost reference
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
 
 ROOT_URLCONF = "jobtracker.urls"
@@ -85,10 +88,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "jobtracker.wsgi.application"
 
-
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
+# Database Configuration
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -96,10 +96,7 @@ DATABASES = {
     }
 }
 
-
 # Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -115,31 +112,30 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/5.1/topics/i18n/
-
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "UTC"
-
 USE_I18N = True
-
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
-
 STATIC_URL = "static/"
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# ✅ Ensure Django uses JWT for authentication
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+}
+
+# ✅ Correct JWT Settings
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),  # Token expires in 30 mins
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),  # Refresh token lasts 7 days
+    "ROTATE_REFRESH_TOKENS": True,  # Issue a new refresh token on login
+    "BLACKLIST_AFTER_ROTATION": True,  # Prevent old refresh tokens from working
+    "AUTH_HEADER_TYPES": ("Bearer",),  # Ensure correct token format
 }

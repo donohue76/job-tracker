@@ -32,3 +32,17 @@ def login_user(request):
             "access": str(refresh.access_token),
         })
     return Response({"error": "Invalid credentials"}, status=400)
+
+@api_view(['POST'])
+def logout_user(request):
+    try:
+        refresh_token = request.data.get("refresh")
+        if not refresh_token:
+            return Response({"error": "Refresh token is required"}, status=400)
+
+        token = RefreshToken(refresh_token)
+        token.blacklist()  # Blacklist the refresh token
+
+        return Response({"message": "Logged out successfully"}, status=200)
+    except Exception as e:
+        return Response({"error": f"Invalid token: {str(e)}"}, status=400)

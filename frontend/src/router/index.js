@@ -1,13 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Login from '@/views/Login.vue';
-import Register from '@/views/Register.vue';
+import LoginPage from '@/views/LoginPage.vue';
+import RegisterPage from '@/views/RegisterPage.vue';
 import JobList from '@/components/JobList.vue';
 import AddJob from '@/components/AddJob.vue';
-import { useAuthStore } from '@/stores/authStore';
+import { useAuthStore } from '@/stores/authStore.js';
 
 const routes = [
-  { path: '/', component: Login },
-  { path: '/register', component: Register },
+  { path: '/', component: LoginPage },
+  { path: '/register', component: RegisterPage },
   { path: '/dashboard', component: JobList, meta: { requiresAuth: true } },
   { path: '/add', component: AddJob, meta: { requiresAuth: true } }
 ];
