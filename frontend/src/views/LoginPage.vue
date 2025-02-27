@@ -7,7 +7,18 @@
         <input v-model="username" placeholder="Username" required class="w-full p-2 border rounded-md" />
         <input v-model="password" type="password" placeholder="Password" required class="w-full p-2 border rounded-md" />
         
-        <button class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">Login</button>
+        <button 
+          :disabled="loading"
+          class="w-full flex items-center justify-center bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+        >
+          <svg v-if="loading" class="animate-spin h-5 w-5 mr-2 border-t-2 border-white rounded-full" viewBox="0 0 24 24"></svg>
+          {{ loading ? "Logging in..." : "Login" }}
+        </button>
+
+        <!-- ✅ Error message is added below the login button -->
+        <p v-if="errorMessage" class="text-red-500 bg-red-100 border border-red-400 text-sm mt-2 p-2 rounded-md">
+          {{ errorMessage }}
+        </p>
       </form>
 
       <p class="mt-4 text-center">
@@ -28,17 +39,60 @@ export default {
     const router = useRouter();
     const username = ref('');
     const password = ref('');
+    const errorMessage = ref('');
+    const loading = ref(false);
 
     const handleLogin = async () => {
-      const result = await authStore.login(username.value, password.value);
-      if (result.success) {
-        router.push('/dashboard'); // Redirect after login
-      } else {
-        alert(result.error);
+      errorMessage.value = ''; // Clear previous errors
+      loading.value = true;
+
+      try {
+        const result = await authStore.login(username.value, password.value);
+        
+        if (result.success) {
+          router.push('/dashboard');
+        } else {
+          // Handle different HTTP errors with specific messages
+          if (result.error && typeof result.error === 'object') {
+            if (result.error.error) {
+              errorMessage.value = result.error.error; // API message (e.g., "Invalid credentials")
+            } else if (result.error.detail) {
+              errorMessage.value = result.error.detail; // Generic API error
+            } else {
+              errorMessage.value = "Login failed. Please check your credentials.";
+            }
+          } else {
+            errorMessage.value = result.error || "Login failed. Please try again.";
+          }
+        }
+      } catch (error) {
+        // Handle network errors or server downtime
+        if (error.response) {
+          switch (error.response.status) {
+            case 400:
+              errorMessage.value = "Invalid input. Please check your username and password.";
+              break;
+            case 401:
+              errorMessage.value = "Unauthorized. Please check your login details.";
+              break;
+            case 403:
+              errorMessage.value = "Access denied.";
+              break;
+            case 500:
+              errorMessage.value = "Server error. Please try again later.";
+              break;
+            default:
+              errorMessage.value = "An unknown error occurred.";
+          }
+        } else {
+          errorMessage.value = "Network error. Please check your internet connection.";
+        }
+      } finally {
+        loading.value = false;
       }
     };
 
-    return { username, password, handleLogin };
+    return { username, password, handleLogin, errorMessage, loading };
   }
 };
 </script>

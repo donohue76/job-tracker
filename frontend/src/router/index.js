@@ -1,9 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { createPinia } from 'pinia';
 import LoginPage from '@/views/LoginPage.vue';
 import RegisterPage from '@/views/RegisterPage.vue';
 import JobList from '@/components/JobList.vue';
 import AddJob from '@/components/AddJob.vue';
 import { useAuthStore } from '@/stores/authStore.js';
+
+const pinia = createPinia(); // Ensure Pinia is created before using the store
 
 const routes = [
   { path: '/', component: LoginPage },
@@ -19,9 +22,10 @@ const router = createRouter({
 
 // Protect routes that require authentication
 router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore();
+  const authStore = useAuthStore(pinia); // Explicitly pass Pinia instance
+
   if (to.meta.requiresAuth && !authStore.accessToken) {
-    next('/');
+    next('/'); // Redirect to login if not authenticated
   } else {
     next();
   }
