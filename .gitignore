@@ -11,3 +11,5 @@ frontend/dist/
 .DS_Store
 --pycache__/
 *.pyc
+__pycache__/
+*.pyc
