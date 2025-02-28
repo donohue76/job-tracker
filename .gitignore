@@ -9,3 +9,5 @@ frontend/dist/
 
 # General
 .DS_Store
+--pycache__/
+*.pyc

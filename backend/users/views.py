@@ -15,7 +15,9 @@ def register_user(request):
             "refresh": str(refresh),
             "access": str(refresh.access_token),
         })
-    return Response(serializer.errors, status=400)
+    else:
+        print(serializer.errors)
+        return Response(serializer.errors, status=400)
 
 @api_view(['POST'])
 def login_user(request):
