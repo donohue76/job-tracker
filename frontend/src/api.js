@@ -17,12 +17,18 @@ const refreshToken = async () => {
         const response = await axios.post(`${API_BASE_URL}token/refresh/`, {
             refresh: authStore.refreshToken
         });
-        authStore.accessToken = response.data.access;
-        localStorage.setItem('accessToken', response.data.access);
-        return response.data.access;
+
+        const newAccessToken = response.data.access;
+        authStore.accessToken = newAccessToken;
+        localStorage.setItem('accessToken', newAccessToken);
+
+        // Ensure all future requests use the new token
+        api.defaults.headers.common["Authorization"] = `Bearer ${newAccessToken}`;
+
+        return newAccessToken;
     } catch (error) {
         console.error("Token refresh failed", error);
-        authStore.logout();
+        authStore.logout(); // Immediately log out if refresh fails
         return null;
     }
 };
@@ -46,40 +52,31 @@ api.interceptors.response.use(
         const authStore = useAuthStore();
         const originalRequest = error.config;
 
-        // Handle Unauthorized (401)
         if (error.response) {
+            // Handle Unauthorized (401) - Attempt token refresh
             if (error.response.status === 401 && !originalRequest._retry) {
-                originalRequest._retry = true; // Prevent infinite loops
+                originalRequest._retry = true;
                 const newAccessToken = await refreshToken();
 
                 if (newAccessToken) {
-                    api.defaults.headers.common["Authorization"] = `Bearer ${newAccessToken}`;
                     originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
                     return api(originalRequest);
                 }
             }
 
-            // Handle Forbidden (403)
-            if (error.response.status === 403) {
-                console.error("Access denied: You do not have permission.");
-                return Promise.reject({
-                    message: "Access denied. You do not have permission to perform this action.",
-                });
+            // Handle common errors
+            const status = error.response.status;
+            if (status === 403) {
+                return Promise.reject({ message: "Access denied. You do not have permission." });
             }
-
-            // Handle Bad Request (400)
-            if (error.response.status === 400) {
+            if (status === 400) {
                 return Promise.reject({
                     message: "Bad request. Please check your input.",
-                    details: error.response.data,
+                    details: error.response.data
                 });
             }
-
-            // Handle Server Errors (500+)
-            if (error.response.status >= 500) {
-                return Promise.reject({
-                    message: "Server error. Please try again later.",
-                });
+            if (status >= 500) {
+                return Promise.reject({ message: "Server error. Please try again later." });
             }
         }
 
@@ -87,35 +84,54 @@ api.interceptors.response.use(
     }
 );
 
-// Authentication functions with structured error handling
+// General function to extract error messages
+const extractErrorMessage = (error) => {
+    console.error("API Error:", error);
+    
+    if (error.response) {
+        // Safely handle different error formats
+        const details = error.response.data;
+        if (details?.username) {
+            return { message: details.username[0], details };
+        }
+        if (details?.error) {
+            return { message: details.error, details };
+        }
+        if (details?.message) {
+            return { message: details.message, details };
+        }
+        return { message: "An unknown error occurred.", details };
+    }
+
+    return { message: "Network error. Please check your connection." };
+};
+
+// Authentication functions
 export const loginUser = async (username, password) => {
     try {
-        const response = await api.post("token/", { username, password });
+        const response = await api.post("auth/login/", { username, password });
         return response.data;
     } catch (error) {
-        console.error("Login failed", error);
-        throw error.response?.data || { message: "Login failed. Please try again." };
+        return Promise.reject(extractErrorMessage(error));
     }
 };
 
 export const registerUser = async (userData) => {
     try {
-        const response = await api.post("register/", userData);
+        const response = await api.post("auth/register/", userData);
         return response.data;
     } catch (error) {
-        console.error("Registration failed", error);
-        throw error.response?.data || { message: "Registration failed. Please check your input." };
+        return Promise.reject(extractErrorMessage(error));
     }
 };
 
-// Job functions with improved error handling
+// Job functions
 export const getJobs = async () => {
     try {
         const response = await api.get("jobs/");
         return response.data;
     } catch (error) {
-        console.error("Failed to fetch jobs", error);
-        throw error.response?.data || { message: "Failed to retrieve jobs." };
+        return Promise.reject(extractErrorMessage(error));
     }
 };
 
@@ -124,8 +140,7 @@ export const addJob = async (jobData) => {
         const response = await api.post("jobs/", jobData);
         return response.data;
     } catch (error) {
-        console.error("Failed to add job", error);
-        throw error.response?.data || { message: "Failed to add job." };
+        return Promise.reject(extractErrorMessage(error));
     }
 };
 
@@ -134,8 +149,7 @@ export const updateJob = async (jobId, jobData) => {
         const response = await api.put(`jobs/${jobId}/`, jobData);
         return response.data;
     } catch (error) {
-        console.error("Failed to update job", error);
-        throw error.response?.data || { message: "Failed to update job." };
+        return Promise.reject(extractErrorMessage(error));
     }
 };
 
@@ -143,7 +157,6 @@ export const deleteJob = async (jobId) => {
     try {
         await api.delete(`jobs/${jobId}/`);
     } catch (error) {
-        console.error("Failed to delete job", error);
-        throw error.response?.data || { message: "Failed to delete job." };
+        return Promise.reject(extractErrorMessage(error));
     }
 };
