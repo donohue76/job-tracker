@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "djoser",
     "jobs",
     "users",
+    "django_extensions",
 ]
 
 MIDDLEWARE = [
@@ -53,10 +54,9 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# ✅ Fix Typo: CORS_ALLOW_CREDENTIALS (Previously CCORS_ALLOW_CREDENTIALS)
 CORS_ALLOW_CREDENTIALS = True  # Allow sending cookies with requests
 
-# ✅ Ensure CORS settings are correct
+# Ensure CORS settings are correct
 CORS_ALLOW_ALL_ORIGINS = False  # Enforce allowed origins only
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Vue.js frontend
@@ -124,16 +124,16 @@ STATIC_URL = "static/"
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# ✅ Ensure Django uses JWT for authentication
+# Ensure Django uses JWT for authentication
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }
 
-# ✅ Correct JWT Settings
+# Correct JWT Settings
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),  # Token expires in 30 mins
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),  # Token expires in 30 mins
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),  # Refresh token lasts 7 days
     "ROTATE_REFRESH_TOKENS": True,  # Issue a new refresh token on login
     "BLACKLIST_AFTER_ROTATION": True,  # Prevent old refresh tokens from working

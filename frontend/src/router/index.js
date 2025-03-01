@@ -6,7 +6,7 @@ import AddJob from "@/components/AddJob.vue";
 import { useAuthStore } from "@/stores/authStore.js";
 
 const routes = [
-  { path: "/", redirect: "/login" }, // ✅ Ensure the root redirects to login
+  { path: "/", redirect: "/login" }, // Ensure the root redirects to login
   { path: "/login", component: LoginPage },
   { path: "/register", component: RegisterPage },
   { path: "/dashboard", component: JobList, meta: { requiresAuth: true } },
