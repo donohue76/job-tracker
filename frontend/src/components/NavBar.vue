@@ -21,10 +21,13 @@ export default {
     const router = useRouter();
 
     const handleLogout = async () => {
+      console.log("Logging out..."); // Debugging output
       const result = await authStore.logout();
       if (result.success) {
-        router.push('/'); // Redirect to login
+        console.log("Redirecting to login...");
+        router.push("/login"); // Redirect after logout
       } else {
+        console.error("Logout error:", result.error);
         alert(result.error);
       }
     };
