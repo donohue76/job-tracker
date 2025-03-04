@@ -1,6 +1,6 @@
 <template>
   <nav class="p-4 bg-blue-600 text-white shadow-md flex justify-between items-center">
-    <div>
+    <div v-if="authStore.user">
       <router-link to="/dashboard" class="hover:underline px-4">Job List</router-link>
       <router-link to="/add" class="hover:underline px-4">Add Job</router-link>
     </div>
@@ -11,28 +11,22 @@
   </nav>
 </template>
 
-<script>
+<script setup>
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'vue-router';
 
-export default {
-  setup() {
-    const authStore = useAuthStore();
-    const router = useRouter();
+const authStore = useAuthStore();
+const router = useRouter();
 
-    const handleLogout = async () => {
-      console.log("Logging out..."); // Debugging output
-      const result = await authStore.logout();
-      if (result.success) {
-        console.log("Redirecting to login...");
-        router.push("/login"); // Redirect after logout
-      } else {
-        console.error("Logout error:", result.error);
-        alert(result.error);
-      }
-    };
-
-    return { authStore, handleLogout };
+const handleLogout = async () => {
+  const result = await authStore.logout();
+  if (result.success) {
+    console.log("Logout successful. Redirecting to login...");
+    
+    // Force a full page reload to ensure Vue state resets properly
+    window.location.href = "/"; 
+  } else {
+    alert(result.error);
   }
 };
 </script>

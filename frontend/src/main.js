@@ -9,13 +9,12 @@ const app = createApp(App);
 app.use(createPinia());
 app.use(router);
 
+// Initialize authentication state from storage
 const authStore = useAuthStore();
-authStore.initializeFromLocalStorage(); // Restore auth state
+authStore.initializeFromLocalStorage();
+authStore.refreshTokenIfNeeded(); // ✅ Ensure this exists
 
-// Refresh token if needed before loading app
-setTimeout(() => authStore.refreshTokenIfNeeded(), 1000);
-
-// 🔄 Axios Interceptor: Automatically refresh token on 401 errors
+// Set up Axios Interceptor to auto-refresh token before it expires
 axios.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -24,7 +23,7 @@ axios.interceptors.response.use(
     if (error.response?.status === 401 && authStore.refreshToken) {
       try {
         console.log("🔄 Refreshing token...");
-        await authStore.refreshAccessToken(); // Directly call refreshAccessToken
+        await authStore.refreshTokenIfNeeded();
 
         // Retry the failed request with the new token
         error.config.headers["Authorization"] = `Bearer ${authStore.accessToken}`;

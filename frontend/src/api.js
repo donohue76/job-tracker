@@ -14,7 +14,7 @@ export const api = axios.create({
 const refreshToken = async () => {
     const authStore = useAuthStore();
     try {
-        const response = await axios.post(`${API_BASE_URL}token/refresh/`, {
+        const response = await axios.post(`${API_BASE_URL}auth/token/refresh/`, {
             refresh: authStore.refreshToken
         });
 
@@ -144,11 +144,21 @@ export const addJob = async (jobData) => {
     }
 };
 
-export const updateJob = async (jobId, jobData) => {
+// 🛠 Updated Job Update Function
+export const updateJob = async (jobId, updatedJob) => {
+    console.log("📤 Sending job update request:", updatedJob);
+
+    // 🛠 Remove null and empty string values
+    const sanitizedJob = Object.fromEntries(
+        Object.entries(updatedJob).filter(([_, value]) => value !== null && value !== "")
+    );
+
     try {
-        const response = await api.put(`jobs/${jobId}/`, jobData);
+        const response = await api.put(`jobs/${jobId}/`, sanitizedJob);
+        console.log("✅ Job updated successfully:", response.data);
         return response.data;
     } catch (error) {
+        console.error("🚨 API Error:", error.response?.data || error.message);
         return Promise.reject(extractErrorMessage(error));
     }
 };

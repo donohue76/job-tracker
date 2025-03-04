@@ -1,8 +1,9 @@
 import { defineStore } from "pinia";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode"; // Ensure this is correctly installed
+import { jwtDecode } from "jwt-decode";
 
 const API_BASE_URL = "http://127.0.0.1:8000/api/auth/";
+const REFRESH_TOKEN_URL = "http://127.0.0.1:8000/api/auth/token/refresh/";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
@@ -20,26 +21,37 @@ export const useAuthStore = defineStore("auth", {
       this.user = JSON.parse(localStorage.getItem("user")) || null;
       this.accessToken = localStorage.getItem("accessToken") || null;
       this.refreshToken = localStorage.getItem("refreshToken") || null;
-      this.setTokenExpiration();
+
+      console.log("🛠 Retrieved from localStorage:");
+      console.log("   Access Token:", this.accessToken);
+      console.log("   Refresh Token:", this.refreshToken);
+
+      if (this.accessToken) {
+        this.setTokenExpiration();
+      }
     },
 
     setTokenExpiration() {
       if (!this.accessToken) return;
+
       try {
         const decoded = jwtDecode(this.accessToken);
-        this.tokenExpiration = decoded.exp * 1000; // Convert to milliseconds
-        console.log("Token expires at:", new Date(this.tokenExpiration));
+        this.tokenExpiration = decoded.exp * 1000;
+        console.log("🔐 Token expires at:", new Date(this.tokenExpiration));
+
         this.scheduleTokenRefresh();
       } catch (error) {
-        console.error("⚠Failed to decode token:", error);
-        this.logout();
+        console.error("⚠ Failed to decode token:", error);
+        this.logout(); // 🔴 Force logout on token decoding failure
       }
     },
 
     scheduleTokenRefresh() {
       if (!this.tokenExpiration) return;
+
       const now = Date.now();
-      const refreshTime = this.tokenExpiration - now - 30; // Refresh 1 min before expiry
+      const refreshTime = this.tokenExpiration - now - 60000; // Refresh 1 minute before expiration
+
       if (refreshTime > 0) {
         console.log(`Scheduling token refresh in ${refreshTime / 1000} seconds`);
         this.refreshTimeout = setTimeout(() => this.refreshAccessToken(), refreshTime);
@@ -49,15 +61,37 @@ export const useAuthStore = defineStore("auth", {
       }
     },
 
-    refreshTokenIfNeeded() {  
+    refreshTokenIfNeeded() {
       const now = Date.now();
       if (this.tokenExpiration && now > this.tokenExpiration - 60000) {
-        console.log("Refreshing token before expiration...");
+        console.log("🔄 Refreshing token before expiration...");
         this.refreshAccessToken();
       }
     },
 
-    async login(username, password) {  // Now inside `actions`
+    async refreshAccessToken() {
+      if (!this.refreshToken) {
+        console.warn("⚠ No refresh token found. Skipping token refresh.");
+        return;
+      }
+
+      try {
+        const response = await axios.post(REFRESH_TOKEN_URL, {
+          refresh: this.refreshToken,
+        });
+
+        this.accessToken = response.data.access;
+        localStorage.setItem("accessToken", this.accessToken);
+        console.log("🔄 Access token refreshed successfully.");
+
+        this.setTokenExpiration();
+      } catch (error) {
+        console.error("Token refresh failed:", error.response?.data || error.message);
+        this.logout();
+      }
+    },
+
+    async login(username, password) {
       this.errorMessage = null;
       try {
         const response = await axios.post(`${API_BASE_URL}login/`, 
@@ -65,12 +99,12 @@ export const useAuthStore = defineStore("auth", {
           { headers: { "Content-Type": "application/json" } }
         );
 
-        console.log("Login successful:", response.data);
-        this.user = response.data.user || { username };
+        this.user = response.data.user;
         this.accessToken = response.data.access;
         this.refreshToken = response.data.refresh;
 
-        console.log("Storing tokens in localStorage...");
+        console.log("Login successful:", response.data);
+
         localStorage.setItem("user", JSON.stringify(this.user));
         localStorage.setItem("accessToken", this.accessToken);
         localStorage.setItem("refreshToken", this.refreshToken);
@@ -85,27 +119,13 @@ export const useAuthStore = defineStore("auth", {
       }
     },
 
-    async refreshAccessToken() {
-      if (!this.refreshToken) return;
-      try {
-        const response = await axios.post(`${API_BASE_URL}token/refresh/`, {
-          refresh: this.refreshToken,
-        });
-
-        this.accessToken = response.data.access;
-        localStorage.setItem("accessToken", this.accessToken);
-        console.log("Access token refreshed successfully.");
-        this.setTokenExpiration();
-      } catch (error) {
-        console.error("Token refresh failed:", error.response?.data || error.message);
-        this.logout();
-      }
-    },
-
     async logout() {
       try {
-        await axios.post(`${API_BASE_URL}logout/`, { refresh: this.refreshToken });
+        if (this.refreshToken) {
+          await axios.post(`${API_BASE_URL}logout/`, { refresh: this.refreshToken });
+        }
 
+        // Clear user state and localStorage
         this.user = null;
         this.accessToken = null;
         this.refreshToken = null;
@@ -116,17 +136,17 @@ export const useAuthStore = defineStore("auth", {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
 
-        console.log("Logged out successfully.");
-        return { success: true }; // Ensure it returns success
+        console.log("🚪 Logged out successfully.");
+
+        return { success: true };
       } catch (error) {
         console.error("Logout failed:", error.response?.data || error.message);
-        this.errorMessage = error.response?.data || "Logout failed.";
-        return { success: false, error: this.errorMessage }; // Ensure error returns
+        return { success: false, error };
       }
     },
 
     clearError() {
       this.errorMessage = null;
-    }
-  }
+    },
+  },
 });
