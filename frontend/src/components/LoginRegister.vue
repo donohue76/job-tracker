@@ -22,13 +22,24 @@
 </template>
 
 <script>
+import { loginUser, registerUser } from '@/api.js';
+
 export default {
   data() {
     return { isLogin: true, username: "", password: "" };
   },
   methods: {
     async submitForm() {
-      console.log(this.isLogin ? "Logging in..." : "Registering...");
+      try {
+        if (this.isLogin) {
+          await loginUser(this.username, this.password);
+        } else {
+          await registerUser({ username: this.username, password: this.password });
+        }
+        window.location.href = "/dashboard";
+      } catch (error) {
+        console.error("Auth Error:", error);
+      }
     }
   }
 };

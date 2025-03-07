@@ -19,6 +19,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/auth/", include("users.urls")),  # Ensure this is correct
-    path("api/", include("jobs.urls")),  # Example if you have jobs API
+    path("api/auth/", include("users.urls")),  # Authentication URLs
+    path("api/", include("jobs.urls")),  # Job applications URLs
 ]

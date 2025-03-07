@@ -1,98 +1,70 @@
 <template>
-  <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-    <div class="p-6 bg-white shadow-md rounded-md w-80">
-      <h2 class="text-xl font-bold mb-4">Login</h2>
+  <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4">
+    <div class="p-6 bg-white shadow-md rounded-md w-full max-w-sm">
+      <h2 class="text-2xl font-bold text-center text-gray-700">Login</h2>
       
-      <form @submit.prevent="handleLogin" class="space-y-4">
-        <input v-model="username" placeholder="Username" required class="w-full p-2 border rounded-md" />
-        <input v-model="password" type="password" placeholder="Password" required class="w-full p-2 border rounded-md" />
-        
+      <form @submit.prevent="handleLogin" class="space-y-4 mt-4">
+        <div>
+          <label for="username" class="block text-gray-600 mb-1">Username</label>
+          <input id="username" v-model="username" placeholder="Enter your username" required
+            class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+
+        <div>
+          <label for="password" class="block text-gray-600 mb-1">Password</label>
+          <input id="password" v-model="password" type="password" placeholder="Enter your password" required
+            class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+
         <button 
           :disabled="loading"
-          class="w-full flex items-center justify-center bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+          class="w-full flex items-center justify-center bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400 transition-all"
         >
-          <svg v-if="loading" class="animate-spin h-5 w-5 mr-2 border-t-2 border-white rounded-full" viewBox="0 0 24 24"></svg>
+          <svg v-if="loading" class="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24" fill="none"
+            xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-dasharray="31.4 31.4"
+              stroke-linecap="round"></circle>
+          </svg>
           {{ loading ? "Logging in..." : "Login" }}
         </button>
 
-        <!-- ✅ Error message is added below the login button -->
         <p v-if="errorMessage" class="text-red-500 bg-red-100 border border-red-400 text-sm mt-2 p-2 rounded-md">
           {{ errorMessage }}
         </p>
       </form>
 
-      <p class="mt-4 text-center">
-        <router-link to="/register" class="text-blue-500">Need an account? Register</router-link>
+      <p class="mt-4 text-center text-gray-600">
+        Don’t have an account? 
+        <router-link to="/register" class="text-blue-600 hover:underline">Register</router-link>
       </p>
     </div>
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'vue-router';
-import { ref } from 'vue';
 
-export default {
-  setup() {
-    const authStore = useAuthStore();
-    const router = useRouter();
-    const username = ref('');
-    const password = ref('');
-    const errorMessage = ref('');
-    const loading = ref(false);
+const authStore = useAuthStore();
+const router = useRouter();
+const username = ref('');
+const password = ref('');
+const errorMessage = ref('');
+const loading = ref(false);
 
-    const handleLogin = async () => {
-      errorMessage.value = ''; // Clear previous errors
-      loading.value = true;
+const handleLogin = async () => {
+  errorMessage.value = ''; // Clear previous errors
+  loading.value = true;
 
-      try {
-        const result = await authStore.login(username.value, password.value);
-        
-        if (result.success) {
-          router.push('/dashboard');
-        } else {
-          // Handle different HTTP errors with specific messages
-          if (result.error && typeof result.error === 'object') {
-            if (result.error.error) {
-              errorMessage.value = result.error.error; // API message (e.g., "Invalid credentials")
-            } else if (result.error.detail) {
-              errorMessage.value = result.error.detail; // Generic API error
-            } else {
-              errorMessage.value = "Login failed. Please check your credentials.";
-            }
-          } else {
-            errorMessage.value = result.error || "Login failed. Please try again.";
-          }
-        }
-      } catch (error) {
-        // Handle network errors or server downtime
-        if (error.response) {
-          switch (error.response.status) {
-            case 400:
-              errorMessage.value = "Invalid input. Please check your username and password.";
-              break;
-            case 401:
-              errorMessage.value = "Unauthorized. Please check your login details.";
-              break;
-            case 403:
-              errorMessage.value = "Access denied.";
-              break;
-            case 500:
-              errorMessage.value = "Server error. Please try again later.";
-              break;
-            default:
-              errorMessage.value = "An unknown error occurred.";
-          }
-        } else {
-          errorMessage.value = "Network error. Please check your internet connection.";
-        }
-      } finally {
-        loading.value = false;
-      }
-    };
+  const result = await authStore.login(username.value, password.value);
 
-    return { username, password, handleLogin, errorMessage, loading };
+  if (result.success) {
+    router.push('/dashboard');
+  } else {
+    errorMessage.value = result.error?.error || "Invalid credentials. Please try again.";
   }
+
+  loading.value = false;
 };
 </script>
