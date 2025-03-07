@@ -7,14 +7,13 @@
         <div>
           <h3 class="font-semibold text-lg">{{ job.position }} at {{ job.company }}</h3>
           <p class="text-sm text-gray-600">
-            Status:
             <span :class="statusClass(job.decision_status)" class="px-3 py-1 text-sm font-semibold rounded-full">
-              {{ job.decision_status || "N/A" }}
+              {{ formatStatus(job.decision_status) }} {{ formatStatusDate(job) }}
             </span>
           </p>
         </div>
 
-        <div class="flex space-x-2">
+        <div class="flex space-x-2 mt-2">
           <button @click="editJob(job)"
                   class="px-4 py-2 bg-yellow-500 text-white rounded-md shadow hover:bg-yellow-600 transition">
             Edit
@@ -46,6 +45,19 @@
           <option value="Withdrawn">Withdrawn</option>
         </select>
 
+        <!-- Status Date Input -->
+        <input v-if="editingJob.decision_status === 'Interviewing'" 
+               type="date" v-model="editingJob.interview_date" 
+               class="w-full p-2 border rounded-md mt-2" />
+        
+        <input v-if="editingJob.decision_status === 'Offer'" 
+               type="date" v-model="editingJob.offer_date" 
+               class="w-full p-2 border rounded-md mt-2" />
+
+        <input v-if="['Accepted', 'Rejected', 'Withdrawn'].includes(editingJob.decision_status)" 
+               type="date" v-model="editingJob.decision_date" 
+               class="w-full p-2 border rounded-md mt-2" />
+
         <div class="mt-4 flex space-x-2">
           <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded-md shadow hover:bg-green-600">
             Save
@@ -68,7 +80,6 @@ export default {
     const jobs = ref([]);
     const editingJob = ref(null);
 
-    // Fetch jobs on mount
     const fetchJobs = async () => {
       try {
         jobs.value = await getJobs();
@@ -79,19 +90,39 @@ export default {
 
     onMounted(fetchJobs);
 
+    // Format status to capitalize first letter
+    const formatStatus = (status) => {
+      if (!status) return "N/A";
+      return status.charAt(0).toUpperCase() + status.slice(1);
+    };
+
+    // Get the corresponding date field for the status
+    const formatStatusDate = (job) => {
+      if (!job.decision_status) return "";
+      const statusDates = {
+        "Applied": job.applied_date ? `- ${job.applied_date}` : "",
+        "Interviewing": job.interview_date ? `- Scheduled for ${job.interview_date}` : "",
+        "Offer": job.offer_date ? `- ${job.offer_date}` : "",
+        "Accepted": job.decision_date ? `- ${job.decision_date}` : "",
+        "Rejected": job.decision_date ? `- ${job.decision_date}` : "",
+        "Withdrawn": job.decision_date ? `- ${job.decision_date}` : "",
+      };
+      return statusDates[job.decision_status] || "";
+    };
+
+    // Status class for styling
     const statusClass = (status) => {
       const statusColors = {
-        Applied: "bg-blue-100 text-blue-700",
-        Interviewing: "bg-yellow-100 text-yellow-700",
-        Offer: "bg-green-100 text-green-700",
-        Accepted: "bg-green-500 text-white",
-        Rejected: "bg-red-100 text-red-700",
-        Withdrawn: "bg-gray-300 text-gray-700",
+        "Applied": "bg-blue-100 text-blue-700",
+        "Interviewing": "bg-yellow-100 text-yellow-700",
+        "Offer": "bg-green-100 text-green-700",
+        "Accepted": "bg-green-500 text-white",
+        "Rejected": "bg-red-100 text-red-700",
+        "Withdrawn": "bg-gray-300 text-gray-700",
       };
       return statusColors[status] || "bg-gray-100 text-gray-700";
     };
 
-    // Delete Job
     const deleteJobEntry = async (jobId) => {
       if (confirm('Are you sure you want to delete this job?')) {
         try {
@@ -103,34 +134,31 @@ export default {
       }
     };
 
-    // Edit Job
     const editJob = (job) => {
       editingJob.value = { ...job };
     };
 
-    // Save Job
     const saveJob = async () => {
       try {
-        // Ensure status is capitalized before sending
-        if (editingJob.value.decision_status) {
-          editingJob.value.decision_status = editingJob.value.decision_status.charAt(0).toUpperCase() + editingJob.value.decision_status.slice(1);
+        if (!editingJob.value.decision_status) {
+          editingJob.value.decision_status = "Applied";
         }
 
-        console.log("📤 Sending updated job data:", JSON.stringify(editingJob.value, null, 2));
+        console.log("Sending updated job data:", JSON.stringify(editingJob.value, null, 2));
 
-        await updateJob(editingJob.value.id, editingJob.value);
+        await updateJob(editingJob.value.id, {
+          ...editingJob.value,
+        });
 
-        jobs.value = jobs.value.map(job =>
+        jobs.value = jobs.value.map(job => 
           job.id === editingJob.value.id ? { ...editingJob.value } : job
         );
-
         editingJob.value = null;
       } catch (error) {
-        console.error("🚨 Error updating job:", error);
+        console.error("Error updating job:", error);
       }
     };
 
-    // Cancel Edit
     const cancelEdit = () => {
       editingJob.value = null;
     };
@@ -138,6 +166,8 @@ export default {
     return {
       jobs,
       editingJob,
+      formatStatus,
+      formatStatusDate,
       statusClass,
       deleteJob: deleteJobEntry,
       editJob,
