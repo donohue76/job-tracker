@@ -1,30 +1,72 @@
-import { createRouter, createWebHistory } from "vue-router";
-import LoginPage from "@/views/LoginPage.vue";
-import RegisterPage from "@/views/RegisterPage.vue";
-import JobList from "@/components/JobList.vue";
-import AddJob from "@/components/AddJob.vue";
-import { useAuthStore } from "@/stores/authStore.js";
+import { createRouter, createWebHistory } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore';
 
 const routes = [
-  { path: "/", redirect: "/login" }, // ✅ Ensure the root redirects to login
-  { path: "/login", component: LoginPage },
-  { path: "/register", component: RegisterPage },
-  { path: "/dashboard", component: JobList, meta: { requiresAuth: true } },
-  { path: "/add", component: AddJob, meta: { requiresAuth: true } }
+  {
+    path: '/',
+    redirect: '/dashboard'  // Changed from '/jobs' to '/dashboard' to match your structure
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/views/Login.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: () => import('@/views/Register.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/dashboard',
+    name: 'Dashboard',
+    component: () => import('@/views/Dashboard.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: () => import('@/views/Profile.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    // Add a catch-all route for 404
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('@/views/NotFound.vue'),
+    meta: { requiresAuth: false }
+  }
 ];
 
 const router = createRouter({
   history: createWebHistory(),
-  routes,
+  routes
 });
 
-// Protect routes that require authentication
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
-  if (to.meta.requiresAuth && !authStore.accessToken) {
-    next("/login");
-  } else {
+  
+  try {
+    if (to.meta.requiresAuth) {
+      const isAuthenticated = await authStore.checkAuth();
+      
+      if (!isAuthenticated) {
+        next({ 
+          path: '/login', 
+          query: { redirect: to.fullPath } 
+        });
+        return;
+      }
+    } else if (authStore.isAuthenticated && (to.path === '/login' || to.path === '/register')) {
+      next('/dashboard');
+      return;
+    }
+    
     next();
+  } catch (error) {
+    console.error('Navigation guard error:', error);
+    next('/login');
   }
 });
 
