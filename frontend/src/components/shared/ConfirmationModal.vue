@@ -1,4 +1,4 @@
-<!-- src/components/ConfirmationModal.vue -->
+<!-- src/components/shared/ConfirmationModal.vue -->
 <template>
   <Teleport to="body">
     <div v-if="show" class="fixed inset-0 z-50 overflow-y-auto">

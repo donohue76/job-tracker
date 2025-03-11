@@ -31,7 +31,7 @@
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "vue-router";
 import { ref } from "vue";
-import ErrorMessage from "@/components/ErrorMessage.vue"; // Import the error component
+import ErrorMessage from "@/components/shared/ErrorMessage.vue"; // Import the error component
 
 export default {
   components: { ErrorMessage }, // Register the component

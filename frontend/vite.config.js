@@ -7,6 +7,8 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
+  root: './',  // ✅ Correct root directory
+  publicDir: 'public',  // ✅ Ensure Vite finds static assets correctly
   plugins: [
     vue(),
     vueJsx(),

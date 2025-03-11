@@ -1,4 +1,4 @@
-<!-- src/components/SearchFilters.vue -->
+<!-- src/components/shared/SearchFilter.vue -->
 <template>
   <div class="bg-white rounded-lg shadow p-4">
     <h3 class="text-lg font-medium text-gray-900 mb-4">Filters</h3>
@@ -60,6 +60,10 @@
 </template>
 
 <script setup>
+defineProps({
+  filters: Object, //Ensure filters is defined as a prop
+});
+
 import { ref, watch } from 'vue'
 
 const statuses = ['Applied', 'Interview', 'Offer', 'Rejected', 'Accepted']

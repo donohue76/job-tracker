@@ -76,12 +76,15 @@
             >
               Profile
             </router-link>
+
             <router-link 
               to="/settings"
               class="block px-4 py-2 text-gray-700 hover:bg-gray-50"
             >
               Settings
             </router-link>
+
+            <!-- 🔽 Logout Button -->
             <button 
               @click="handleLogout"
               class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50"
@@ -96,7 +99,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 
@@ -109,8 +112,8 @@ const showUserMenu = ref(false)
 const notifications = ref([])
 const unreadNotifications = computed(() => notifications.value.filter(n => !n.read).length)
 
-const userName = computed(() => authStore.user?.name || 'User')
-const userAvatar = computed(() => authStore.user?.avatar || 'https://placehold.co/32x32')
+const userName = computed(() => authStore.user?.username || 'User');
+const userAvatar = computed(() => authStore.user?.avatar ?? 'https://placehold.co/100x100');
 
 const toggleNotifications = () => {
   showNotifications.value = !showNotifications.value
@@ -129,12 +132,13 @@ const handleSearch = () => {
 
 const handleLogout = async () => {
   try {
-    await authStore.logout()
-    router.push('/login')
+    await authStore.logout();
+    router.push("/login");
   } catch (error) {
-    console.error('Logout failed:', error)
+    console.error("Logout failed:", error);
+    alert("Logout failed. Please try again.");
   }
-}
+};
 
 // Close dropdowns when clicking outside
 const handleClickOutside = (event) => {

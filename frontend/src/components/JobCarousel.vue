@@ -120,18 +120,20 @@ const maxPages = computed(() => Math.ceil(jobs.value.length / itemsPerPage) - 1)
 
 const loadRecommendedJobs = async () => {
   try {
-    loading.value = true
-    error.value = null
-    // Replace with your API call
-    const response = await fetch('/api/recommended-jobs')
-    jobs.value = await response.json()
-  } catch (err) {
-    error.value = err.message
-    console.error('Failed to load recommended jobs:', err)
-  } finally {
-    loading.value = false
+    const response = await fetch("http://127.0.0.1:8000/api/recommended-jobs");
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    jobs.value = data; // ✅ Store the fetched jobs in the `jobs` ref
+    console.log("Loaded recommended jobs:", data);
+  } catch (error) {
+    error.value = `Failed to load jobs: ${error.message}`; // ✅ Set error message in ref
+    console.error("Failed to load recommended jobs:", error.message);
   }
-}
+};
 
 const formatDate = (date) => {
   return new Date(date).toLocaleDateString('en-US', {

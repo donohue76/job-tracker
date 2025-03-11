@@ -1,71 +1,113 @@
 <template>
-  <div class="flex items-center justify-center min-h-screen bg-gray-100">
-    <div class="w-full max-w-md p-6 bg-white rounded shadow-md">
-      <h2 class="text-2xl font-bold text-center mb-6">Login</h2>
-      <form @submit.prevent="handleLogin">
-        <div class="mb-4">
-          <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-          <input
-            v-model="email"
-            type="email"
-            id="email"
-            class="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:ring-blue-300"
-            required
-          />
-        </div>
-        <div class="mb-4">
-          <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-          <input
-            v-model="password"
-            type="password"
-            id="password"
-            class="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:ring-blue-300"
-            required
-          />
-        </div>
-        <div v-if="error" class="mb-4 text-sm text-red-500">{{ error }}</div>
+  <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+    <div class="p-6 bg-white shadow-md rounded-md w-80">
+      <h2 class="text-xl font-bold mb-4">Login</h2>
+
+      <form @submit.prevent="handleLogin" class="space-y-4">
+        <input
+          v-model="usernameOrEmail"
+          placeholder="Username or Email"
+          required
+          class="w-full p-2 border rounded-md"
+        />
+        <input
+          v-model="password"
+          type="password"
+          placeholder="Password"
+          required
+          class="w-full p-2 border rounded-md"
+        />
+
         <button
-          type="submit"
-          class="w-full px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-300"
           :disabled="loading"
+          class="w-full flex items-center justify-center bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400"
         >
-          <span v-if="loading">Logging in...</span>
-          <span v-else>Login</span>
+          <svg
+            v-if="loading"
+            class="animate-spin h-5 w-5 mr-2 border-t-2 border-white rounded-full"
+            viewBox="0 0 24 24"
+          ></svg>
+          {{ loading ? "Logging in..." : "Login" }}
         </button>
+
+        <!-- ✅ Error message is added below the login button -->
+        <p v-if="errorMessage" class="text-red-500 bg-red-100 border border-red-400 text-sm mt-2 p-2 rounded-md">
+          {{ errorMessage }}
+        </p>
       </form>
+
+      <p class="mt-4 text-center">
+        <router-link to="/register" class="text-blue-500">Need an account? Register</router-link>
+      </p>
     </div>
   </div>
 </template>
 
 <script>
 import { useAuthStore } from '@/stores/authStore';
+import { useRouter } from 'vue-router';
+import { ref } from 'vue';
 
 export default {
-  data() {
-    return {
-      email: '',
-      password: '',
-      loading: false,
-      error: null
-    };
-  },
-  methods: {
-    async handleLogin() {
-      const authStore = useAuthStore();
-      this.loading = true;
-      this.error = null;
+  setup() {
+    const authStore = useAuthStore();
+    const router = useRouter();
+    const usernameOrEmail = ref(''); // Changed from username to usernameOrEmail
+    const password = ref('');
+    const errorMessage = ref('');
+    const loading = ref(false);
 
-      const success = await authStore.login({
-        email: this.email,
-        password: this.password
-      });
+    const handleLogin = async () => {
+      errorMessage.value = ''; // Clear previous errors
+      loading.value = true;
 
-      if (!success) {
-        this.error = authStore.getError;
+      try {
+        const result = await authStore.login(usernameOrEmail.value, password.value); // Pass usernameOrEmail
+
+        if (result.success) {
+          router.push('/dashboard');
+        } else {
+          // Handle different HTTP errors with specific messages
+          if (result.error && typeof result.error === 'object') {
+            if (result.error.error) {
+              errorMessage.value = result.error.error; // API message (e.g., "Invalid credentials")
+            } else if (result.error.detail) {
+              errorMessage.value = result.error.detail; // Generic API error
+            } else {
+              errorMessage.value = "Login failed. Please check your credentials.";
+            }
+          } else {
+            errorMessage.value = result.error || "Login failed. Please try again.";
+          }
+        }
+      } catch (error) {
+        // Handle network errors or server downtime
+        if (error.response) {
+          switch (error.response.status) {
+            case 400:
+              errorMessage.value = "Invalid input. Please check your username and password.";
+              break;
+            case 401:
+              errorMessage.value = "Unauthorized. Please check your login details.";
+              break;
+            case 403:
+              errorMessage.value = "Access denied.";
+              break;
+            case 500:
+              errorMessage.value = "Server error. Please try again later.";
+              break;
+            default:
+              errorMessage.value = "An unknown error occurred.";
+          }
+        } else {
+          errorMessage.value = "Network error. Please check your internet connection.";
+        }
+      } finally {
+        loading.value = false;
       }
+    };
 
-      this.loading = false;
-    }
+    return { usernameOrEmail, password, handleLogin, errorMessage, loading }; // Return usernameOrEmail
   }
 };
 </script>

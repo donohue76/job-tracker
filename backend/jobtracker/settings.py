@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "djoser",
     "jobs",
     "users",
+    "django_extensions",
 ]
 
 MIDDLEWARE = [
@@ -53,10 +54,10 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# ✅ Fix Typo: CORS_ALLOW_CREDENTIALS (Previously CCORS_ALLOW_CREDENTIALS)
+# Fix Typo: CORS_ALLOW_CREDENTIALS (Previously CCORS_ALLOW_CREDENTIALS)
 CORS_ALLOW_CREDENTIALS = True  # Allow sending cookies with requests
 
-# ✅ Ensure CORS settings are correct
+# Ensure CORS settings are correct
 CORS_ALLOW_ALL_ORIGINS = False  # Enforce allowed origins only
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Vue.js frontend
@@ -90,9 +91,13 @@ WSGI_APPLICATION = "jobtracker.wsgi.application"
 
 # Database Configuration
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'jobtracker',
+        'USER': 'jobtrackeruser',
+        'PASSWORD': 'jobtracker',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
