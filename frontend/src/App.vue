@@ -1,15 +1,21 @@
-<script setup>
-import { RouterView } from 'vue-router'
-import NavBar from "@/components/NavBar.vue";
-</script>
+<!--src.App.vue-->
 
 <template>
-  <NavBar />
-  <div class="p-6">
-    <RouterView />
-  </div>
+  <v-app>
+    <!-- Sidebar Navigation -->
+    <SideNav />
+
+    <v-main>
+      <!-- Top Navigation -->
+      <TopNav />
+
+      <!-- Main Content -->
+      <router-view />
+    </v-main>
+  </v-app>
 </template>
 
-<style scoped>
-/* Minimal custom styling since Tailwind handles most of it */
-</style>
+<script setup>
+import SideNav from "@/components/SideNav.vue";
+import TopNav from "@/components/TopNav.vue";
+</script>

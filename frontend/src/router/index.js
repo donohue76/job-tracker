@@ -1,16 +1,26 @@
+//router/index.js
+
 import { createRouter, createWebHistory } from "vue-router";
-import LoginPage from "@/views/LoginPage.vue";
-import RegisterPage from "@/views/RegisterPage.vue";
-import JobList from "@/components/JobList.vue";
+import { useAuthStore } from "@/stores/authStore.js"; // Import the auth store at the top
+import Login from "@/views/Login.vue";
+import Register from "@/views/Register.vue";
+import Dashboard from "@/views/Dashboard.vue";
 import AddJob from "@/components/AddJob.vue";
-import { useAuthStore } from "@/stores/authStore.js";
+import Profile from "@/views/Profile.vue";
+import SearchFilter from "@/components/shared/SearchFilter.vue"; // ✅ Ensure correct import
+import Applications from "@/views/Applications.vue";
+import Settings from "@/views/Settings.vue";
 
 const routes = [
-  { path: "/", redirect: "/login" }, // ✅ Ensure the root redirects to login
-  { path: "/login", component: LoginPage },
-  { path: "/register", component: RegisterPage },
-  { path: "/dashboard", component: JobList, meta: { requiresAuth: true } },
-  { path: "/add", component: AddJob, meta: { requiresAuth: true } }
+  { path: "/", redirect: "/login" },
+  { path: "/login", component: Login },
+  { path: "/register", component: Register },
+  { path: "/dashboard", component: Dashboard, meta: { requiresAuth: true } },
+  { path: "/add", component: AddJob, meta: { requiresAuth: true } },
+  { path: "/profile", component: Profile, meta: { requiresAuth: true } },
+  { path: "/settings", component: Settings, meta: { requiresAuth: true } }, // ✅ Fix missing route
+  { path: "/search", component: SearchFilter, meta: { requiresAuth: true } },
+  { path: "/applications", component: Applications, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({
@@ -18,9 +28,10 @@ const router = createRouter({
   routes,
 });
 
-// Protect routes that require authentication
+// Authentication guard
 router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore();
+  const authStore = useAuthStore(); // Now initialized properly at the top
+
   if (to.meta.requiresAuth && !authStore.accessToken) {
     next("/login");
   } else {

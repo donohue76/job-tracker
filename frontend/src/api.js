@@ -1,3 +1,5 @@
+// src/api.js
+
 import axios from 'axios';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -9,6 +11,40 @@ export const api = axios.create({
         "Content-Type": "application/json",
     }
 });
+
+// Profile functions
+export const getProfile = async () => {
+    try {
+        const response = await api.get("profile/"); // Replace with your actual profile endpoint
+        return response.data;
+    } catch (error) {
+        return Promise.reject(extractErrorMessage(error));
+    }
+};
+
+export const updateProfile = async (profileData) => {
+    try {
+        const response = await api.put("profile/", profileData); // Replace with your actual profile endpoint
+        return response.data;
+    } catch (error) {
+        return Promise.reject(extractErrorMessage(error));
+    }
+};
+
+export const uploadProfileImage = async (file) => {
+    try {
+        const formData = new FormData();
+        formData.append('avatar', file); // Assuming your backend expects the file to be named 'avatar'
+        const response = await api.post("profile/upload_avatar/", formData, { // Replace with your actual upload avatar endpoint
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        return response.data;
+    } catch (error) {
+        return Promise.reject(extractErrorMessage(error));
+    }
+};
 
 // Function to refresh the token
 const refreshToken = async () => {
@@ -87,7 +123,7 @@ api.interceptors.response.use(
 // General function to extract error messages
 const extractErrorMessage = (error) => {
     console.error("API Error:", error);
-    
+
     if (error.response) {
         // Safely handle different error formats
         const details = error.response.data;
@@ -107,23 +143,34 @@ const extractErrorMessage = (error) => {
 };
 
 // Authentication functions
-export const loginUser = async (username, password) => {
-    try {
-        const response = await api.post("auth/login/", { username, password });
-        return response.data;
-    } catch (error) {
-        return Promise.reject(extractErrorMessage(error));
-    }
+export async function loginUser(username, password) {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/login/`, {
+      username,
+      password,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Login failed:", error.response?.data || error);
+    throw error;
+  }
+}
+
+export async function registerUser(username, email, password) {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/register/`, {
+      username,
+      email,
+      password,
+    });
+    console.log("Registration successful:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Registration failed:", error.response?.data || error);
+    throw error;
+  }
 };
 
-export const registerUser = async (userData) => {
-    try {
-        const response = await api.post("auth/register/", userData);
-        return response.data;
-    } catch (error) {
-        return Promise.reject(extractErrorMessage(error));
-    }
-};
 
 // Job functions
 export const getJobs = async () => {

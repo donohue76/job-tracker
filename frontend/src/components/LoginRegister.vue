@@ -1,35 +1,54 @@
+<!-- src/components/LoginRegister.vue -->
+
 <template>
-  <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-    <div class="p-6 bg-white shadow-md rounded-md w-80">
-      <h2 class="text-xl font-bold mb-4">{{ isLogin ? "Login" : "Register" }}</h2>
+  <v-container class="fill-height d-flex align-center justify-center">
+    <v-card class="pa-6 mx-auto" max-width="400">
+      <v-card-title class="text-h5 font-weight-bold text-center">
+        {{ isLogin ? "Login" : "Register" }}
+      </v-card-title>
 
-      <form @submit.prevent="submitForm" class="space-y-4">
-        <input v-model="username" placeholder="Username" class="w-full p-2 border rounded-md" required />
-        <input v-model="password" type="password" placeholder="Password" class="w-full p-2 border rounded-md" required />
+      <v-card-text>
+        <v-form @submit.prevent="submitForm">
+          <v-text-field
+            v-model="username"
+            label="Username"
+            variant="outlined"
+            prepend-inner-icon="mdi-account"
+            required
+          ></v-text-field>
 
-        <button class="w-full bg-blue-600 text-white py-2 rounded-md">
-          {{ isLogin ? "Login" : "Register" }}
-        </button>
-      </form>
+          <v-text-field
+            v-model="password"
+            label="Password"
+            type="password"
+            variant="outlined"
+            prepend-inner-icon="mdi-lock"
+            required
+          ></v-text-field>
 
-      <p class="mt-4 text-center">
-        <a @click="isLogin = !isLogin" class="text-blue-500 cursor-pointer">
+          <v-btn type="submit" block color="primary" class="mt-4">
+            {{ isLogin ? "Login" : "Register" }}
+          </v-btn>
+        </v-form>
+      </v-card-text>
+
+      <v-card-actions class="justify-center">
+        <v-btn variant="text" color="blue" @click="isLogin = !isLogin">
           {{ isLogin ? "Need an account? Register" : "Already have an account? Login" }}
-        </a>
-      </p>
-    </div>
-  </div>
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-container>
 </template>
 
-<script>
-export default {
-  data() {
-    return { isLogin: true, username: "", password: "" };
-  },
-  methods: {
-    async submitForm() {
-      console.log(this.isLogin ? "Logging in..." : "Registering...");
-    }
-  }
+<script setup>
+import { ref } from "vue";
+
+const isLogin = ref(true);
+const username = ref("");
+const password = ref("");
+
+const submitForm = () => {
+  console.log(isLogin.value ? "Logging in..." : "Registering...");
 };
 </script>

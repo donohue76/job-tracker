@@ -1,15 +1,43 @@
-# Backend
-backend/env/
-backend/__pycache__/
-backend/db.sqlite3
+# Virtual environment
+backend/jobtracker-env/
+env/
 
-# Frontend
-frontend/node_modules/
-frontend/dist/
-
-# General
-.DS_Store
---pycache__/
-*.pyc
+# Python-related ignores
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+db.sqlite3
+*.sqlite3
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Environment Variables
+.env
+*.env
+
+# Node/Vue.js
+node_modules/
+dist/
+npm-debug.log
+yarn-error.log
+
+# Django
+staticfiles/
+media/
+migrations/
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# Cache and temp files
+*.swp
+*.swo
+
+

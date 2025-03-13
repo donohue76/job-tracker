@@ -39,3 +39,22 @@ def job_detail(request, pk):
     if request.method == 'DELETE':
         job.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
+class RecommendedJobsView(APIView):
+    """
+    API endpoint to return a list of recommended jobs.
+    """
+
+    def get(self, request):
+        # Example static data (Replace this with a database query if needed)
+        recommended_jobs = [
+            {"id": 1, "title": "Frontend Developer", "company": "Google", "location": "Remote", "salary": "$100k - $120k", "tags": ["React", "Vue", "CSS"], "postedDate": "2024-03-10"},
+            {"id": 2, "title": "Backend Engineer", "company": "Amazon", "location": "Seattle, WA", "salary": "$110k - $130k", "tags": ["Python", "Django", "API"], "postedDate": "2024-03-12"},
+            {"id": 3, "title": "DevOps Engineer", "company": "Microsoft", "location": "Redmond, WA", "salary": "$120k - $140k", "tags": ["AWS", "Terraform", "CI/CD"], "postedDate": "2024-03-08"},
+        ]
+
+        return Response(recommended_jobs, status=status.HTTP_200_OK)
