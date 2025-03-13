@@ -1,8 +1,14 @@
-<!-- src/components/LoadingSpinner.vue -->
+<!-- src/components/shared/LoadingSpinner.vue -->
+
 <template>
   <div class="flex items-center justify-center p-4">
-    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-    <span v-if="message" class="ml-3 text-gray-600">{{ message }}</span>
+    <v-progress-circular 
+      indeterminate 
+      color="primary" 
+      size="32" 
+      class="mr-3"
+    />
+    <span v-if="message" class="text-gray-600">{{ message }}</span>
   </div>
 </template>
 
@@ -12,5 +18,5 @@ defineProps({
     type: String,
     default: ''
   }
-})
+});
 </script>

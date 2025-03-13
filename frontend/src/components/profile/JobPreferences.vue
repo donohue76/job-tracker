@@ -1,66 +1,70 @@
+<!-- src/components/profile/JobPreferences.vue -->
+
 <template>
-  <div class="bg-white rounded-lg shadow p-6">
-    <h2 class="text-xl font-semibold mb-4">Job Preferences</h2>
-    <form @submit.prevent="handleSubmit">
-      <div class="grid grid-cols-2 gap-6">
-        <!-- Desired Role Input -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Desired Role</label>
-          <input
-            v-model="profile.desired_role"
-            type="text"
-            placeholder="Frontend Developer"
-            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-          />
-        </div>
+  <v-card class="mb-6">
+    <v-card-title class="text-h6 font-weight-bold">Job Preferences</v-card-title>
+    <v-card-text>
+      <v-form @submit.prevent="handleSubmit">
+        <v-container>
+          <v-row>
+            <!-- Desired Role Input -->
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="profile.desired_role"
+                label="Desired Role"
+                placeholder="Frontend Developer"
+                outlined
+                dense
+              ></v-text-field>
+            </v-col>
 
-        <!-- Preferred Location Input -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Preferred Location</label>
-          <input
-            v-model="profile.preferred_location"
-            type="text"
-            placeholder="Remote / City Name"
-            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-          />
-        </div>
+            <!-- Preferred Location Input -->
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="profile.preferred_location"
+                label="Preferred Location"
+                placeholder="Remote / City Name"
+                outlined
+                dense
+              ></v-text-field>
+            </v-col>
 
-        <!-- Salary Range Input -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Salary Range</label>
-          <input
-            v-model="profile.salary_range"
-            type="text"
-            placeholder="$90k - $120k"
-            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-          />
-        </div>
+            <!-- Salary Range Input -->
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="profile.salary_range"
+                label="Salary Range"
+                placeholder="$90k - $120k"
+                outlined
+                dense
+              ></v-text-field>
+            </v-col>
 
-        <!-- Industry Input -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Industry</label>
-          <input
-            v-model="profile.industry"
-            type="text"
-            placeholder="Tech, Finance, etc."
-            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-          />
-        </div>
-      </div>
+            <!-- Industry Input -->
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="profile.industry"
+                label="Industry"
+                placeholder="Tech, Finance, etc."
+                outlined
+                dense
+              ></v-text-field>
+            </v-col>
+          </v-row>
+        </v-container>
 
-      <!-- Save Button -->
-      <div class="mt-6 flex items-center">
-        <button
-          type="submit"
-          class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-150 disabled:opacity-50"
-          :disabled="loading"
-        >
-          {{ loading ? 'Saving...' : 'Save Job Preferences' }}
-        </button>
-        <span v-if="error" class="ml-4 text-red-600">{{ error }}</span>
-      </div>
-    </form>
-  </div>
+        <!-- Save Button -->
+        <v-card-actions>
+          <v-btn color="primary" type="submit" :loading="loading">
+            Save Job Preferences
+          </v-btn>
+          <v-alert v-if="error" type="error" dense class="ml-4">
+            {{ error }}
+          </v-alert>
+        </v-card-actions>
+      </v-form>
+    </v-card-text>
+  </v-card>
 </template>
 
 <script setup>
@@ -90,7 +94,3 @@ async function handleSubmit() {
   }
 }
 </script>
-
-<style scoped>
-/* Add any component-specific styles here */
-</style>

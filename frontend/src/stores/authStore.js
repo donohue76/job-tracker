@@ -1,21 +1,25 @@
+// src/stores/authStore.js
+
 import { defineStore } from "pinia";
 import axios from "axios";
 
 const API_BASE_URL = "http://127.0.0.1:8000/api/";
 
-// ✅ Helper function to safely parse JSON from local storage
-const safeParse = (data) => {
+// Helper function to safely parse JSON from local storage
+const safeParse = (key) => {
   try {
+    const data = localStorage.getItem(key);
     return data ? JSON.parse(data) : null;
   } catch (error) {
-    console.error("Error parsing localStorage data:", error);
+    console.error(`Error parsing localStorage key "${key}":`, error);
+    localStorage.removeItem(key); // uto-clear corrupted data
     return null;
   }
 };
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
-    user: safeParse(localStorage.getItem("user")),
+    user: safeParse("user"), // Prevents crash on invalid JSON
     accessToken: localStorage.getItem("accessToken") || null,
     refreshToken: localStorage.getItem("refreshToken") || null,
     errorMessage: null,

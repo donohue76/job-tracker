@@ -1,27 +1,21 @@
+<!--src.App.vue-->
+
 <template>
-  <div class="flex h-screen bg-gray-100">
-    <!-- Side Navigation -->
+  <v-app>
+    <!-- Sidebar Navigation -->
     <SideNav />
 
-    <!-- Main Content -->
-    <div class="flex-1 flex flex-col">
+    <v-main>
       <!-- Top Navigation -->
       <TopNav />
 
-      <!-- Page Content -->
-      <div class="p-4">
-        <router-view />
-      </div>
-    </div>
-  </div>
+      <!-- Main Content -->
+      <router-view />
+    </v-main>
+  </v-app>
 </template>
 
 <script setup>
-import { RouterView } from 'vue-router'
 import SideNav from "@/components/SideNav.vue";
 import TopNav from "@/components/TopNav.vue";
 </script>
-
-<style scoped>
-/* Minimal custom styling since Tailwind handles most of it */
-</style>

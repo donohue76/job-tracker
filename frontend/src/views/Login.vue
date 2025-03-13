@@ -1,113 +1,84 @@
+<!-- src/views/Login.vue -->
+
 <template>
-  <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-    <div class="p-6 bg-white shadow-md rounded-md w-80">
-      <h2 class="text-xl font-bold mb-4">Login</h2>
+  <v-container class="fill-height d-flex justify-center align-center">
+    <v-card class="pa-6" elevation="6" width="400">
+      <v-card-title class="text-h5 text-center font-weight-bold">
+        Login
+      </v-card-title>
 
-      <form @submit.prevent="handleLogin" class="space-y-4">
-        <input
+      <v-divider class="my-3"></v-divider>
+
+      <v-form @submit.prevent="handleLogin">
+        <v-text-field
           v-model="usernameOrEmail"
-          placeholder="Username or Email"
+          label="Username or Email"
+          variant="outlined"
+          density="comfortable"
+          clearable
           required
-          class="w-full p-2 border rounded-md"
-        />
-        <input
+        ></v-text-field>
+
+        <v-text-field
           v-model="password"
+          label="Password"
           type="password"
-          placeholder="Password"
+          variant="outlined"
+          density="comfortable"
+          clearable
           required
-          class="w-full p-2 border rounded-md"
-        />
+        ></v-text-field>
 
-        <button
-          :disabled="loading"
-          class="w-full flex items-center justify-center bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+        <v-btn
+          :loading="loading"
+          color="primary"
+          block
+          type="submit"
+          class="mt-4"
         >
-          <svg
-            v-if="loading"
-            class="animate-spin h-5 w-5 mr-2 border-t-2 border-white rounded-full"
-            viewBox="0 0 24 24"
-          ></svg>
-          {{ loading ? "Logging in..." : "Login" }}
-        </button>
+          Login
+        </v-btn>
 
-        <!-- ✅ Error message is added below the login button -->
-        <p v-if="errorMessage" class="text-red-500 bg-red-100 border border-red-400 text-sm mt-2 p-2 rounded-md">
+        <v-alert v-if="errorMessage" type="error" class="mt-3" prominent>
           {{ errorMessage }}
-        </p>
-      </form>
+        </v-alert>
+      </v-form>
 
-      <p class="mt-4 text-center">
-        <router-link to="/register" class="text-blue-500">Need an account? Register</router-link>
-      </p>
-    </div>
-  </div>
+      <v-divider class="my-3"></v-divider>
+
+      <v-card-actions class="justify-center">
+        <router-link to="/register" class="text-primary text-decoration-none">
+          Need an account? Register
+        </router-link>
+      </v-card-actions>
+    </v-card>
+  </v-container>
 </template>
 
-<script>
-import { useAuthStore } from '@/stores/authStore';
-import { useRouter } from 'vue-router';
-import { ref } from 'vue';
+<script setup>
+import { ref } from "vue";
+import { useAuthStore } from "@/stores/authStore";
+import { useRouter } from "vue-router";
 
-export default {
-  setup() {
-    const authStore = useAuthStore();
-    const router = useRouter();
-    const usernameOrEmail = ref(''); // Changed from username to usernameOrEmail
-    const password = ref('');
-    const errorMessage = ref('');
-    const loading = ref(false);
+const authStore = useAuthStore();
+const router = useRouter();
 
-    const handleLogin = async () => {
-      errorMessage.value = ''; // Clear previous errors
-      loading.value = true;
+const usernameOrEmail = ref("");
+const password = ref("");
+const errorMessage = ref("");
+const loading = ref(false);
 
-      try {
-        const result = await authStore.login(usernameOrEmail.value, password.value); // Pass usernameOrEmail
+const handleLogin = async () => {
+  errorMessage.value = "";
+  loading.value = true;
 
-        if (result.success) {
-          router.push('/dashboard');
-        } else {
-          // Handle different HTTP errors with specific messages
-          if (result.error && typeof result.error === 'object') {
-            if (result.error.error) {
-              errorMessage.value = result.error.error; // API message (e.g., "Invalid credentials")
-            } else if (result.error.detail) {
-              errorMessage.value = result.error.detail; // Generic API error
-            } else {
-              errorMessage.value = "Login failed. Please check your credentials.";
-            }
-          } else {
-            errorMessage.value = result.error || "Login failed. Please try again.";
-          }
-        }
-      } catch (error) {
-        // Handle network errors or server downtime
-        if (error.response) {
-          switch (error.response.status) {
-            case 400:
-              errorMessage.value = "Invalid input. Please check your username and password.";
-              break;
-            case 401:
-              errorMessage.value = "Unauthorized. Please check your login details.";
-              break;
-            case 403:
-              errorMessage.value = "Access denied.";
-              break;
-            case 500:
-              errorMessage.value = "Server error. Please try again later.";
-              break;
-            default:
-              errorMessage.value = "An unknown error occurred.";
-          }
-        } else {
-          errorMessage.value = "Network error. Please check your internet connection.";
-        }
-      } finally {
-        loading.value = false;
-      }
-    };
+  const result = await authStore.login(usernameOrEmail.value, password.value);
+  loading.value = false;
 
-    return { usernameOrEmail, password, handleLogin, errorMessage, loading }; // Return usernameOrEmail
+  if (result.success) {
+    router.push("/dashboard");
+  } else {
+    errorMessage.value = result.error || "Login failed. Please try again.";
   }
 };
 </script>

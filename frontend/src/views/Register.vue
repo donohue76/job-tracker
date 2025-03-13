@@ -1,75 +1,118 @@
+<!-- src/views/Register.vue -->
+
 <template>
-  <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-    <div class="p-6 bg-white shadow-md rounded-md w-80">
-      <h2 class="text-xl font-bold mb-4">Register</h2>
+  <v-container class="fill-height d-flex justify-center align-center">
+    <v-card class="pa-6" elevation="6" width="400">
+      <v-card-title class="text-h5 text-center font-weight-bold">
+        Register
+      </v-card-title>
 
-      <ErrorMessage /> <!-- Uses the global error message component -->
+      <v-divider class="my-3"></v-divider>
 
-      <form @submit.prevent="handleRegister" class="space-y-4">
-        <input v-model="username" placeholder="Username" required class="w-full p-2 border rounded-md" />
-        <input v-model="email" placeholder="Email" required class="w-full p-2 border rounded-md" />
-        <input v-model="password" type="password" placeholder="Password" required class="w-full p-2 border rounded-md" />
-        <input v-model="confirmPassword" type="password" placeholder="Confirm Password" required class="w-full p-2 border rounded-md" />
+      <v-form @submit.prevent="handleRegister">
+        <v-text-field
+          v-model="username"
+          label="Username"
+          variant="outlined"
+          density="comfortable"
+          clearable
+          required
+        ></v-text-field>
 
-        <button
-          :disabled="loading"
-          class="w-full flex items-center justify-center bg-green-600 text-white py-2 rounded-md hover:bg-green-700 disabled:bg-gray-400"
+        <v-text-field
+          v-model="email"
+          label="Email"
+          type="email"
+          variant="outlined"
+          density="comfortable"
+          clearable
+          required
+        ></v-text-field>
+
+        <v-text-field
+          v-model="password"
+          label="Password"
+          type="password"
+          variant="outlined"
+          density="comfortable"
+          clearable
+          required
+        ></v-text-field>
+
+        <v-text-field
+          v-model="confirmPassword"
+          label="Confirm Password"
+          type="password"
+          variant="outlined"
+          density="comfortable"
+          clearable
+          required
+        ></v-text-field>
+
+        <v-btn
+          :loading="loading"
+          color="success"
+          block
+          type="submit"
+          class="mt-4"
         >
-          <svg v-if="loading" class="animate-spin h-5 w-5 mr-2 border-t-2 border-white rounded-full" viewBox="0 0 24 24"></svg>
-          {{ loading ? "Registering..." : "Register" }}
-        </button>
-      </form>
+          Register
+        </v-btn>
 
-      <p class="mt-4 text-center">
-        <router-link to="/login" class="text-blue-500">Already have an account? Login</router-link>
-      </p>
-    </div>
-  </div>
+        <v-alert v-if="errorMessage" type="error" class="mt-3" prominent>
+          {{ errorMessage }}
+        </v-alert>
+      </v-form>
+
+      <v-divider class="my-3"></v-divider>
+
+      <v-card-actions class="justify-center">
+        <router-link to="/login" class="text-primary text-decoration-none">
+          Already have an account? Login
+        </router-link>
+      </v-card-actions>
+    </v-card>
+  </v-container>
 </template>
 
-<script>
+<script setup>
+import { ref } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "vue-router";
-import { ref } from "vue";
-import ErrorMessage from "@/components/shared/ErrorMessage.vue"; // Import the error component
 
-export default {
-  components: { ErrorMessage }, // Register the component
-  setup() {
-    const authStore = useAuthStore();
-    const router = useRouter();
+const authStore = useAuthStore();
+const router = useRouter();
 
-    const username = ref("");
-    const email = ref("");
-    const password = ref("");
-    const confirmPassword = ref("");
-    const loading = ref(false);
+const username = ref("");
+const email = ref("");
+const password = ref("");
+const confirmPassword = ref("");
+const errorMessage = ref("");
+const loading = ref(false);
 
-    const handleRegister = async () => {
-      authStore.clearError(); // Clear previous errors
+const handleRegister = async () => {
+  authStore.clearError();
+  errorMessage.value = "";
+  loading.value = true;
 
-      loading.value = true;
+  if (password.value !== confirmPassword.value) {
+    errorMessage.value = "Passwords do not match.";
+    loading.value = false;
+    return;
+  }
 
-      if (password.value !== confirmPassword.value) {
-        authStore.errorMessage = "Passwords do not match."; // Set error globally
-        loading.value = false;
-        return;
-      }
+  const result = await authStore.register({
+    username: username.value,
+    email: email.value,
+    password: password.value,
+  });
 
-      const result = await authStore.register({
-        username: username.value,
-        email: email.value,
-        password: password.value,
-      });
+  loading.value = false;
 
-      if (result.success) {
-        router.push("/login");
-      }
-
-      loading.value = false;
-    };
-
-    return { username, email, password, confirmPassword, handleRegister, loading };
+  if (result.success) {
+    router.push("/login");
+  } else {
+    errorMessage.value = result.error || "Registration failed. Please try again.";
   }
 };
 </script>

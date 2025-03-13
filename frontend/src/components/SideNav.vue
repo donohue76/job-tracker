@@ -1,89 +1,61 @@
 <!-- src/components/SideNav.vue -->
+
 <template>
-  <aside class="w-64 bg-gray-800 text-white min-h-screen">
-    <div class="p-4 border-b border-gray-700">
-      <h1 class="text-2xl font-bold">Job Tracker</h1>
-    </div>
-    
-    <nav class="mt-4">
-      <router-link 
-        v-for="item in navItems" 
+  <v-navigation-drawer app color="grey-darken-3">
+    <v-list density="compact">
+      <v-list-item title="JobTracker" class="text-h6 font-weight-bold px-4 py-3"></v-list-item>
+      <v-divider></v-divider>
+
+      <v-list-item
+        v-for="item in navItems"
         :key="item.path"
         :to="item.path"
-        class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 transition-colors"
-        :class="{ 'bg-gray-700 text-white': isCurrentRoute(item.path) }"
+        link
+        :class="{ 'bg-primary text-white': $route.path === item.path }"
       >
-        <span class="mr-3" v-html="item.icon"></span>
-        {{ item.name }}
-      </router-link>
-    </nav>
+        <template v-slot:prepend>
+          <v-icon>{{ item.icon }}</v-icon>
+        </template>
+        <v-list-item-title>{{ item.name }}</v-list-item-title>
+      </v-list-item>
+    </v-list>
 
-    <!-- User Section -->
-    <div class="absolute bottom-0 w-64 p-4 border-t border-gray-700" v-if="isAuthenticated">
-      <div class="flex items-center space-x-3">
-        <img 
-          :src="userAvatar" 
-          alt="Profile" 
-          class="w-10 h-10 rounded-full bg-gray-600"
-        >
-        <div class="flex-1">
-          <p class="text-sm font-medium text-gray-300">{{ userName }}</p>
-          <button 
-            @click="handleLogout" 
-            class="text-sm text-gray-400 hover:text-white transition-colors"
-          >
-            Logout
-          </button>
-        </div>
-      </div>
-    </div>
-  </aside>
+    <v-divider></v-divider>
+
+    <!-- User Info Section -->
+    <v-list v-if="isAuthenticated">
+      <v-list-item>
+        <v-avatar>
+          <img :src="userAvatar" />
+        </v-avatar>
+        <v-list-item-title>{{ userName }}</v-list-item-title>
+        <v-btn variant="text" color="error" @click="handleLogout">Logout</v-btn>
+      </v-list-item>
+    </v-list>
+  </v-navigation-drawer>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useAuthStore } from '@/stores/authStore'
+import { computed } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/authStore";
 
-const router = useRouter()
-const route = useRoute()
-const authStore = useAuthStore()
+const router = useRouter();
+const authStore = useAuthStore();
 
-const navItems = ref([
-  { 
-    name: 'Dashboard', 
-    path: '/dashboard', 
-    icon: '📊'
-  },
-  { 
-    name: 'Job Search', 
-    path: '/search', 
-    icon: '🔍'
-  },
-  { 
-    name: 'Applications', 
-    path: '/applications', 
-    icon: '📝'
-  },
-  { 
-    name: 'Profile', 
-    path: '/profile', 
-    icon: '👤'
-  }
-])
+const navItems = [
+  { name: "Dashboard", path: "/dashboard", icon: "mdi-view-dashboard" },
+  { name: "Job Search", path: "/search", icon: "mdi-magnify" },
+  { name: "Applications", path: "/applications", icon: "mdi-briefcase" },
+  { name: "Profile", path: "/profile", icon: "mdi-account" },
+];
 
-const isAuthenticated = computed(() => authStore.isAuthenticated)
-const userName = computed(() => authStore.user?.name || 'User')
-const userAvatar = computed(() => authStore.user?.avatar || 'https://placehold.co/40x40')
-
-const isCurrentRoute = (path) => route.path === path
+const isAuthenticated = computed(() => authStore.isAuthenticated);
+const userName = computed(() => authStore.user?.name || "User");
+const userAvatar = computed(() => authStore.user?.avatar || "https://placehold.co/100x100");
 
 const handleLogout = async () => {
-  try {
-    await authStore.logout()
-    router.push('/login')
-  } catch (error) {
-    console.error('Logout failed:', error)
-  }
-}
+  await authStore.logout();
+  router.push("/login");
+};
 </script>

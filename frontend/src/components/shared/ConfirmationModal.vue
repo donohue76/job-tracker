@@ -1,41 +1,24 @@
 <!-- src/components/shared/ConfirmationModal.vue -->
+
 <template>
-  <Teleport to="body">
-    <div v-if="show" class="fixed inset-0 z-50 overflow-y-auto">
-      <!-- Backdrop -->
-      <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
-      
-      <!-- Modal -->
-      <div class="flex min-h-screen items-center justify-center p-4">
-        <div class="relative bg-white rounded-lg max-w-md w-full p-6">
-          <div class="mb-4">
-            <h3 class="text-lg font-medium text-gray-900">{{ title }}</h3>
-            <p class="mt-2 text-sm text-gray-500">{{ message }}</p>
-          </div>
-          
-          <div class="mt-6 flex justify-end space-x-3">
-            <button
-              @click="$emit('cancel')"
-              class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-md"
-            >
-              {{ cancelText }}
-            </button>
-            <button
-              @click="$emit('confirm')"
-              :class="[
-                'px-4 py-2 text-sm font-medium rounded-md',
-                dangerous 
-                  ? 'bg-red-600 text-white hover:bg-red-700'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-              ]"
-            >
-              {{ confirmText }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </Teleport>
+  <v-dialog v-model="show" max-width="400px" persistent>
+    <v-card>
+      <v-card-title class="text-h6 font-weight-bold">
+        {{ title }}
+      </v-card-title>
+      <v-card-text class="text-body-2 text-gray-600">
+        {{ message }}
+      </v-card-text>
+      <v-card-actions class="justify-end">
+        <v-btn variant="text" @click="$emit('cancel')">
+          {{ cancelText }}
+        </v-btn>
+        <v-btn :color="dangerous ? 'error' : 'primary'" @click="$emit('confirm')">
+          {{ confirmText }}
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
@@ -54,17 +37,18 @@ defineProps({
   },
   confirmText: {
     type: String,
-    default: 'Confirm'
+    default: "Confirm"
   },
   cancelText: {
     type: String,
-    default: 'Cancel'
+    default: "Cancel"
   },
   dangerous: {
     type: Boolean,
     default: false
   }
-})
+});
 
-defineEmits(['confirm', 'cancel'])
+// Define all emitted events explicitly
+defineEmits(["confirm", "cancel", "close"]);
 </script>
